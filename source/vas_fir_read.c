@@ -11,6 +11,7 @@
 extern vas_fir_list IRs;
 
 #ifdef VAS_USE_LIBMYSOFA
+
 int vas_fir_read_sofa_0Degrees(char *fullpath, float *leftIR, float *rightIR)
 {
     int err = 0;
@@ -35,6 +36,9 @@ void vas_fir_read_singleImpulseFromFloatArray(vas_fir *x, char *name, float *lef
 {
     int ele = 0;
     int azi = 0;
+    
+    if(offset > length)
+        return;
     
     if(vas_fir_getInitFlag(x))
     {
@@ -62,8 +66,8 @@ void vas_fir_read_singleImpulseFromFloatArray(vas_fir *x, char *name, float *lef
     vas_fir_setMetaData_manually1(x, length, segmentSize, VAS_IR_DIRECTIONFORMAT_SINGLE, 1, 1, VAS_IR_AUDIOFORMAT_STEREO, VAS_IR_LINEFORMAT_IR, offset, end);
     x->metaData.fullPath = vas_mem_alloc(sizeof(char) * strlen(name));
     strcpy(x->metaData.fullPath, name);
-    vas_dynamicFirChannel_prepareFilter(x->left, left, ele, azi);
-    vas_dynamicFirChannel_prepareFilter(x->right, right, ele, azi);
+    vas_dynamicFirChannel_prepareFilter(x->left, left+offset, ele, azi);
+    vas_dynamicFirChannel_prepareFilter(x->right, right+offset, ele, azi);
     vas_fir_list_addNode(&IRs, vas_fir_listNode_new(x));
     vas_fir_setInitFlag((vas_fir *)x);
 }
