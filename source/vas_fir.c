@@ -496,7 +496,7 @@ FILE *vas_fir_readText_metaData1(vas_fir *x, char *fullpath)
     }
     else
     {
-        x->description.fullPath = vas_mem_alloc(sizeof(char) * size);
+        x->description.fullPath = vas_mem_alloc(size + 1); // include 1 byte for null terminator
         strcpy(x->description.fullPath, fullpath);
         vas_filter_extractMetaDataFromText1(x, filePtr, &line);
         
