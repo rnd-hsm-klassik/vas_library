@@ -1,6 +1,10 @@
 #include "vas_firobject.h"
 #include "vas_fir_read.h"
 
+#ifndef MIN
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
