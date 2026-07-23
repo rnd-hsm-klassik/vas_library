@@ -13,7 +13,7 @@
 
 [submodule "C-Thread-Pool"]
 	path = C-Thread-Pool
-	url = git@github.com:Pithikos/C-Thread-Pool.git
+	url = https://github.com/Pithikos/C-Thread-Pool.git
 [submodule "pffft"]
 	path = pffft
-	url = git@github.com:marton78/pffft.git
+	url = https://github.com/marton78/pffft.git
