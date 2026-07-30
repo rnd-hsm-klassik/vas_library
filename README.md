@@ -13,7 +13,66 @@ far from physically accurate. Also the number of reflections is rather limited
 The male speech audio file used in most examples is from:
 http://dx.doi.org/10.14279/depositonce-8536
 
-Usage
+## Building
+
+## Building the Pure Data externals on macOS
+
+The externals compile straight out of the Xcode project — no CMake step and no
+prebuilt libraries. libmysofa, kissfft, pffft and C-Thread-Pool are all compiled
+from source into each external, so the submodules have to be checked out first:
+
+```bash
+git submodule update --init --recursive
+```
+
+Then build every external at once:
+
+```bash
+xcodebuild -project examples/PureData/vas_pd_osx/vas_pd_osx.xcodeproj -alltargets -configuration Release build
+```
+
+Or a single one, e.g.:
+
+```bash
+xcodebuild -project examples/PureData/vas_pd_osx/vas_pd_osx.xcodeproj -target 'vas_binaural~' -configuration Release build
+```
+
+Use `-target`, not `-scheme`: the project has eight targets but only four
+schemes, and one of them (`rwa_binauralspace~`) does not match any target name.
+The full target list is
+
+    rwa_binauralsimple~  vas_binaural~  vas_binauralspace~  vas_partconv~
+    vas_dynconv~         vas_reverb~    vas_hpcomp~         vas_del~
+
+`xcodebuild -list -project examples/PureData/vas_pd_osx/vas_pd_osx.xcodeproj`
+prints it as well.
+
+Each target links `.pd_darwin` into `examples/PureData/vas_pd_osx/build/Release`
+and its Copy Files phase then copies it next to the help patches in
+`examples/PureData/build`, which is the folder that is checked in. To use an
+external, put that `.pd_darwin` either beside the patch that loads it or into a
+directory on Pd's search path.
+
+All targets build universal (`arm64` + `x86_64`), so the same binary works on
+Apple Silicon and Intel — including under a Rosetta Pd. Deployment target is
+macOS 11.0 for the arm64 slice (the minimum Apple Silicon supports) and
+10.10/10.12 for x86_64.
+
+The C sources under `source/` are not on any header search path. Xcode resolves
+their `#include "…"` through the header map it generates from target
+membership, so a file from `source/` that a new external needs must be added to
+the Xcode project — the `.h` to the target's Copy Headers phase and the `.c` to
+its Compile Sources phase. Adding the directory to `HEADER_SEARCH_PATHS`
+instead would diverge from every existing target.
+
+Note that a few submodules are still declared with `git@github.com:` URLs in
+`.gitmodules`, which needs an SSH key on GitHub. Without one, rewrite those to
+`https://github.com/…` before running the submodule update.
+
+For Linux and Windows use the pd-lib-builder makefiles in
+`examples/PureData/vas_pd_linux` instead.
+
+## Usage
 
 Documentation is not complete, most work has been done for the Unity and Pure Data examples, Max/MSP examples are broken right now (soon to be fixed).
 Helpfiles for the Pure Data objects vas_binaural~, vas_reverb~ and vas_hpcomp~ are in Examples/PureData/doc
@@ -27,14 +86,9 @@ For the Unity Plugin on, put the BRIR/HRTF files inside the 'StreamingAssets' Fo
 
 A sofa to vas textformat converter is in the matlab folder. Sofa support will come back soon
 
-To do next:
+## To do next
 
 Include sofa support again.
 Redo MaxMSP objects.
 Material Characteristics for the Unity spatializer.
 Change fft framework for non-Apple OSs.
-
-
-
-
-
