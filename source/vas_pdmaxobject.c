@@ -242,11 +242,29 @@ void vas_pdmaxobject_read(vas_pdmaxobject *x, t_symbol *s, float segmentSize, fl
     }
 
 #ifdef PUREDATA
-    unsigned long length = strlen(x->canvasDirectory);
-    if(x->canvasDirectory[length-1] == '/')
-        sprintf(x->fullpath, "%s%s", x->canvasDirectory, filename);
-    else
-        sprintf(x->fullpath, "%s/%s", x->canvasDirectory, filename);
+    /* Resolve the IR the way Pd resolves any file: an absolute path as given,
+       then the directory of the patch holding the object, then the global search
+       path. Concatenating the canvas directory unconditionally (as this did) means
+       a shared IR set has to be copied next to every patch that loads it - for the
+       FABIAN HRTFs that is 38 MB per copy. Hosts add their resource directory with
+       libpd_add_to_search_path() to make it resolvable from anywhere. */
+    char dirbuf[MAXPDSTRING], *nameptr;
+    int fd = open_via_path(x->canvasDirectory, filename, "",
+                           dirbuf, &nameptr, MAXPDSTRING, 0);
+    if(fd < 0)
+    {
+        pd_error(x, "Could not find %s (looked in %s and in the Pd search path)",
+                 filename, x->canvasDirectory);
+        return;
+    }
+    sys_close(fd);
+
+    if(snprintf(x->fullpath, sizeof(x->fullpath), "%s/%s", dirbuf, nameptr)
+       >= (int)sizeof(x->fullpath))
+    {
+        pd_error(x, "Path to %s is too long", filename);
+        return;
+    }
 #else
     vas_maxObjectUtilities_openFile1(s, x->fullpath);
 #endif
