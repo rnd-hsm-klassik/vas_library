@@ -17,7 +17,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - This changelog.
 - `.gitignore` entry for `examples/PureData/vas_pd_osx/build`, the Xcode build
   directory. The externals themselves live in `examples/PureData/build`, which
-  stays tracked.
+
+### Removed
+
+- The built `.pd_darwin` externals are no longer tracked. Nine in
+  `examples/PureData/build` and one in
+  `examples/PureData/vas_pd_linux/vas_dynconv~` were checked in; they are build
+  output and are now ignored via `*.pd_darwin`. `examples/PureData/build` stays
+  tracked for the help patches, so the externals have to be built before use.
+  One of the nine, `vas_delay~.pd_darwin`, had no matching Xcode target at all —
+  it was left over from a target that no longer exists and could not have been
+  rebuilt.
 
 ### Changed
 

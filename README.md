@@ -49,9 +49,10 @@ prints it as well.
 
 Each target links `.pd_darwin` into `examples/PureData/vas_pd_osx/build/Release`
 and its Copy Files phase then copies it next to the help patches in
-`examples/PureData/build`, which is the folder that is checked in. To use an
-external, put that `.pd_darwin` either beside the patch that loads it or into a
-directory on Pd's search path.
+`examples/PureData/build`. The `.pd_darwin` files are build output and are not
+tracked. That folder is checked in for the help patches only, so run the build
+above before using the externals. To use one, put its `.pd_darwin` either beside
+the patch that loads it or into a directory on Pd's search path.
 
 All targets build universal (`arm64` + `x86_64`), so the same binary works on
 Apple Silicon and Intel — including under a Rosetta Pd. Deployment target is

@@ -3,3 +3,11 @@
 /examples/Unity/SpatializerTest/Library
 /examples/Unity/SpatializerTest/Temp
 .DS_Store
+
+# Xcode build directory of the Pd externals.
+/examples/PureData/vas_pd_osx/build/
+
+# Built Pd externals. examples/PureData/build stays tracked for the help
+# patches, but the .pd_darwin files in it are build output (rebuild them with
+# the xcodebuild line in the README).
+*.pd_darwin
