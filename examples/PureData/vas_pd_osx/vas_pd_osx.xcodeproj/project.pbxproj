@@ -13,6 +13,7 @@
 		842E090620C67E8B0089C3D9 /* vas_fir_binaural.c in Sources */ = {isa = PBXBuildFile; fileRef = 842E090420C67E8B0089C3D9 /* vas_fir_binaural.c */; };
 		E4F1B00A2B0000010000AA03 /* vas_firobject.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F1B00A2B0000010000AA02 /* vas_firobject.c */; };
 		E4F1B00A2B0000010000AA04 /* vas_firobject.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F1B00A2B0000010000AA01 /* vas_firobject.h */; };
+		E4F1B00A2B0000010000AB01 /* vas_fir_read.c in Sources */ = {isa = PBXBuildFile; fileRef = E451E58D25DE6C3B00DD043F /* vas_fir_read.c */; };
 		844237661FB4A69E005ACA50 /* m_pd.h in Headers */ = {isa = PBXBuildFile; fileRef = 844237651FB4A69D005ACA50 /* m_pd.h */; };
 		844237761FB4A887005ACA50 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 844237741FB4A6E2005ACA50 /* Accelerate.framework */; };
 		84C9E38F213ACA5D004C6B54 /* vas_fir.c in Sources */ = {isa = PBXBuildFile; fileRef = 842E090020C67E760089C3D9 /* vas_fir.c */; };
@@ -717,7 +718,7 @@
 		E4F1B00A2B0000010000AA02 /* vas_firobject.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vas_firobject.c; path = ../../../source/vas_firobject.c; sourceTree = "<group>"; };
 		843A834222560CE200CC7F80 /* vas_iir_biquad.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vas_iir_biquad.c; path = ../../../source/vas_iir_biquad.c; sourceTree = "<group>"; };
 		843A834322560CE300CC7F80 /* vas_iir_biquad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vas_iir_biquad.h; path = ../../../source/vas_iir_biquad.h; sourceTree = "<group>"; };
-		844237651FB4A69D005ACA50 /* m_pd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = m_pd.h; sourceTree = "<group>"; };
+		844237651FB4A69D005ACA50 /* m_pd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../../pure-data/src/m_pd.h; sourceTree = SOURCE_ROOT; };
 		844237741FB4A6E2005ACA50 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		84C8BADF2211A47F0038459A /* kiss_fft.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = kiss_fft.c; path = ../../../kissfft/kiss_fft.c; sourceTree = "<group>"; };
 		84C8BAE42211A48C0038459A /* kiss_fftr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = kiss_fftr.c; path = ../../../kissfft/tools/kiss_fftr.c; sourceTree = "<group>"; };
@@ -794,7 +795,7 @@
 		E484ADEA274B8DF3007571B6 /* kdtree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kdtree.h; sourceTree = "<group>"; };
 		E484ADEC274B8DF3007571B6 /* lookup.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lookup.c; sourceTree = "<group>"; };
 		E484ADED274B8DF3007571B6 /* tools.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tools.c; sourceTree = "<group>"; };
-		E484ADEE274B8DF3007571B6 /* mysofa_export.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysofa_export.h; sourceTree = "<group>"; };
+		E484ADEE274B8DF3007571B6 /* mysofa_export.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../../libmysofa_generated/hrtf/mysofa_export.h; sourceTree = SOURCE_ROOT; };
 		E484ADEF274B8DF3007571B6 /* easy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = easy.c; sourceTree = "<group>"; };
 		E484ADF0274B8DF3007571B6 /* check.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = check.c; sourceTree = "<group>"; };
 		E484ADF7274B8DF3007571B6 /* reader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = reader.c; sourceTree = "<group>"; };
@@ -816,7 +817,7 @@
 		E484AEFD274B8EA3007571B6 /* kdtree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kdtree.h; sourceTree = "<group>"; };
 		E484AEFF274B8EA3007571B6 /* lookup.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lookup.c; sourceTree = "<group>"; };
 		E484AF00274B8EA3007571B6 /* tools.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tools.c; sourceTree = "<group>"; };
-		E484AF01274B8EA3007571B6 /* mysofa_export.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysofa_export.h; sourceTree = "<group>"; };
+		E484AF01274B8EA3007571B6 /* mysofa_export.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../../libmysofa_generated/hrtf/mysofa_export.h; sourceTree = SOURCE_ROOT; };
 		E484AF02274B8EA3007571B6 /* easy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = easy.c; sourceTree = "<group>"; };
 		E484AF03274B8EA3007571B6 /* check.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = check.c; sourceTree = "<group>"; };
 		E484AF0A274B8EA3007571B6 /* reader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = reader.c; sourceTree = "<group>"; };
@@ -2074,6 +2075,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E4F1B00A2B0000010000AB01 /* vas_fir_read.c in Sources */,
 				E484AF3F274B8EA3007571B6 /* tools.c in Sources */,
 				E484AF21274B8EA3007571B6 /* minphase.c in Sources */,
 				E484AE2C274B8DF3007571B6 /* tools.c in Sources */,
@@ -2149,6 +2151,8 @@
 					VAS_INPUTVECTOR_USE_FLOAT,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"$(PROJECT_DIR)/../../../C-Thread-Pool",
@@ -2160,7 +2164,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/../../../libmysofa/build/src",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "-mfma";
 				OTHER_LDFLAGS = (
@@ -2192,6 +2196,8 @@
 					VAS_INPUTVECTOR_USE_FLOAT,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"$(PROJECT_DIR)/../../../C-Thread-Pool",
@@ -2203,7 +2209,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/../../../libmysofa/build/src",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "-mfma";
 				OTHER_LDFLAGS = (
@@ -2235,6 +2241,8 @@
 					VAS_USE_LIBMYSOFA,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"$(PROJECT_DIR)/../../../C-Thread-Pool",
@@ -2246,7 +2254,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/../../../libmysofa/build/src",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "-mfma";
 				OTHER_LDFLAGS = (
@@ -2279,6 +2287,8 @@
 					VAS_USE_LIBMYSOFA,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"$(PROJECT_DIR)/../../../C-Thread-Pool",
@@ -2290,7 +2300,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/../../../libmysofa/build/src",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "-mfma";
 				OTHER_LDFLAGS = (
@@ -2324,6 +2334,8 @@
 					VAS_USE_LIBMYSOFA,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"\"$(SRCROOT)/../../../libmysofa/src/resampler\"",
@@ -2371,6 +2383,8 @@
 					VAS_USE_LIBMYSOFA,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"\"$(SRCROOT)/../../../libmysofa/src/resampler\"",
@@ -2416,6 +2430,8 @@
 					VAS_USE_MULTITHREADCONVOLUTION,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"$(PROJECT_DIR)/../../../C-Thread-Pool",
@@ -2461,6 +2477,8 @@
 					VAS_USE_MULTITHREADCONVOLUTION,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"$(PROJECT_DIR)/../../../C-Thread-Pool",
@@ -2507,6 +2525,8 @@
 					VAS_USE_LIBMYSOFA,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"\"$(SRCROOT)/../../../libmysofa/src/resampler\"",
@@ -2555,6 +2575,8 @@
 					VAS_USE_LIBMYSOFA,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"\"$(SRCROOT)/../../../libmysofa/src/resampler\"",
@@ -2598,9 +2620,10 @@
 					VAS_INPUTVECTOR_USE_FLOAT,
 					VAS_DEBUG_MEM,
 					VERBOSE,
-					VAS_USE_LIBMYSOFA,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"\"$(SRCROOT)/../../../libmysofa/src/resampler\"",
@@ -2645,9 +2668,10 @@
 					VAS_INPUTVECTOR_USE_FLOAT,
 					VAS_DEBUG_MEM,
 					VERBOSE,
-					VAS_USE_LIBMYSOFA,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"\"$(SRCROOT)/../../../libmysofa/src/resampler\"",
@@ -2695,6 +2719,8 @@
 					VAS_USE_LIBMYSOFA,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"\"$(SRCROOT)/../../../libmysofa/src/resampler\"",
@@ -2743,6 +2769,8 @@
 					VAS_USE_LIBMYSOFA,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"\"$(SRCROOT)/../../../libmysofa/src/resampler\"",
@@ -2772,6 +2800,8 @@
 		FA2927EE1A899B4C005A2BA9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LIBMYSOFA_GENERATED_DIR = "$(SRCROOT)/../../../libmysofa_generated";
+				PD_INCLUDE_DIR = "$(SRCROOT)/../../../pure-data/src";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -2805,7 +2835,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INSTALL_PATH = "akbinaural~";
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -2815,6 +2845,8 @@
 		FA2927EF1A899B4C005A2BA9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LIBMYSOFA_GENERATED_DIR = "$(SRCROOT)/../../../libmysofa_generated";
+				PD_INCLUDE_DIR = "$(SRCROOT)/../../../pure-data/src";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -2843,7 +2875,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INSTALL_PATH = "akbinaural~";
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 			};
@@ -2867,6 +2899,8 @@
 					VAS_USE_LIBMYSOFA,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"$(PROJECT_DIR)/../../../C-Thread-Pool",
@@ -2906,6 +2940,8 @@
 					VAS_USE_LIBMYSOFA,
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(PD_INCLUDE_DIR)",
+					"$(LIBMYSOFA_GENERATED_DIR)/hrtf",
 					"$(PROJECT_DIR)/../../../libmysofa/src/hrtf",
 					"$(PROJECT_DIR)/../../../kissfft/**",
 					"$(PROJECT_DIR)/../../../C-Thread-Pool",

@@ -9,14 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `pure-data` submodule, pinned to release `0.52-2`, supplying `m_pd.h`. The
+  Xcode project referenced that header as a file next to the `.xcodeproj` but it
+  was never in the repository, so no target could compile.
+
+  `0.52-2` matches the Pd that RWA Creator and RWA Player embed via libpd —
+  commit `18c9695` in both — since this repository is a submodule of each. The
+  externals are built against the oldest Pd they have to load into; they load
+  into newer ones fine (verified against Pd 0.56-5). Bumping the pin should be
+  tested against those two projects.
+- `libmysofa_generated/`, holding the two headers libmysofa's CMake would
+  normally generate (`config.h`, `hrtf/mysofa_export.h`). The example projects
+  compile libmysofa from source instead of configuring it, so nothing ever
+  generated them.
+- `PD_INCLUDE_DIR` and `LIBMYSOFA_GENERATED_DIR` build settings, so the Pd
+  headers can be pointed at an installed Pd
+  (`xcodebuild … PD_INCLUDE_DIR=/Applications/Pd-0.56-5.app/Contents/Resources/src`)
+  rather than the submodule.
 - README section on building the Pure Data externals on macOS: submodule
   checkout, the `xcodebuild -alltargets` invocation, why `-target` has to be
   used instead of `-scheme` (eight targets, four schemes, one of which does not
-  name a target), where the products land, and the header-map rule that decides
-  whether a file from `source/` can be included at all.
+  name a target), where the products land, where the three non-repository
+  headers come from, the header-map rule that decides whether a file from
+  `source/` can be included at all, and how to load-test an external.
 - This changelog.
 - `.gitignore` entry for `examples/PureData/vas_pd_osx/build`, the Xcode build
   directory. The externals themselves live in `examples/PureData/build`, which
+  stays tracked. (Claimed in an earlier revision of this changelog but never
+  actually added.)
 
 ### Removed
 
@@ -47,15 +67,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   when `ARCHS` asked for it, so the externals could not be loaded by a native
   Apple Silicon Pd. Both settings now match what `vas_partconv~` already used
   (`$(ARCHS_STANDARD)` / `"x86_64 arm64"`). Xcode gives the `arm64` slice a
-  deployment target of macOS 11.0 and leaves `x86_64` at 10.10/10.12, so Intel
-  support is unaffected. The checked-in binaries in `examples/PureData/build`
-  have been rebuilt accordingly.
+  deployment target of macOS 11.0 and leaves `x86_64` at 10.13, so Intel
+  support is unaffected.
 
 ### Fixed
 
-- All eight Pure Data externals in `examples/PureData/vas_pd_osx` build again
-  from a fresh clone. Two independent problems stood between a checkout and a
-  working `.pd_darwin`:
+- All eight Pure Data externals in `examples/PureData/vas_pd_osx` now build from
+  a fresh clone **and load into Pd**. An earlier revision of this changelog
+  claimed the build was fixed; it was not. The two items below were real but
+  only cleared the first errors, and four further problems were left:
+  - Every target failed to compile: `m_pd.h`, `mysofa_export.h` and libmysofa's
+    `config.h` were all absent from the repository. They are now supplied by the
+    `pure-data` submodule and `libmysofa_generated/`, both on
+    `HEADER_SEARCH_PATHS` in all sixteen target configurations (target-level
+    settings replace the project-level list rather than extending it, so each
+    one needs the entries).
+  - `rwa_binauralsimple~` was the only target that did not compile
+    `source/vas_fir_read.c`, although `vas_pdmaxobject.c` — which every target
+    compiles — calls `vas_fir_read_impulseFromFile`. Added to its Compile
+    Sources phase.
+  - `vas_del~` defined `VAS_USE_LIBMYSOFA` without compiling any libmysofa
+    source, so the SOFA reader in `vas_fir.c` was compiled in and left
+    `mysofa_open`/`mysofa_close`/`mysofa_getfilter_float` unresolved. `vas_del~`
+    is a plain delay object with no SOFA code, so the define is dropped, which
+    is what `vas_reverb~` and `vas_partconv~` already do.
+
+    Both of these got through the build because the externals link with
+    `-undefined dynamic_lookup`: a missing source file is not a link error, it
+    is a `dlopen` failure when Pd loads the object. `rwa_binauralsimple~` and
+    `vas_del~` built cleanly and then failed with `symbol not found in flat
+    namespace`. All eight are now load-tested, and the README documents how.
+  - `MACOSX_DEPLOYMENT_TARGET` was 10.10 in two configurations and 10.12 in
+    four more, both below the 10.13 minimum current Xcode accepts; all raised to
+    10.13, which silences the warning Xcode emitted on every build.
   - Five targets (`rwa_binauralsimple~`, `vas_binaural~`, `vas_binauralspace~`,
     `vas_hpcomp~`, `vas_dynconv~`) listed thirteen libmysofa object files —
     `libmysofa/src/hrtf/{cache,check,easy,interpolate,kdtree,lookup,loudness,minphase,neighbors,reader,resample,spherical,tools}.o`

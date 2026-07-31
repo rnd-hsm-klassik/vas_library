@@ -3,6 +3,7 @@
 /examples/Unity/SpatializerTest/Library
 /examples/Unity/SpatializerTest/Temp
 .DS_Store
+UserInterfaceState.xcuserstate
 
 # Xcode build directory of the Pd externals.
 /examples/PureData/vas_pd_osx/build/

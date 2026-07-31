@@ -17,3 +17,6 @@
 [submodule "pffft"]
 	path = pffft
 	url = https://github.com/marton78/pffft.git
+[submodule "pure-data"]
+	path = pure-data
+	url = https://github.com/pure-data/pure-data.git
