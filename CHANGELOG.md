@@ -72,6 +72,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A `set` (array-loaded IRs) whose arrays can't be resolved no longer corrupts
+  the heap, it posts an error and leaves the current filter untouched. The
+  failure path was unguarded: `vas_pdmaxobject_getFloatArrayAndLength` nulled
+  the array pointer but returned the stale previous length (so a failing `set`
+  after a successful one copied that many words from a NULL pointer), and
+  `vas_fir_read_singleImpulseFromFloatArray` accepted `length 0`, driving
+  `setFilterSize(0)` into `numberOfSegments = 0/0` (silently 0 on arm64) and
+  zero-sized segment/output arrays, then set the init flag anyway, so the
+  running DSP convolved through garbage pointers (briefly audible during the
+  crash).
+
+  Observed in RWA Creator as heap corruption crashing much later in Qt painting,
+  triggered by a patch using `$0-arrayL` in **message boxes**: message-box `$0`
+  never expands to the canvas id (it is always `0`, only object-box arguments
+  expand), so every `soundfiler read` and `set` targeted the nonexistent
+  `0-arrayL`.
+
+  Guards added at three levels: the array fetch zeroes the length on failure
+  (and its "no such array" post no longer passes `%s` without an argument,
+  undefined behaviour on every miss), the `set` entry points (`set1`,
+  `set_mono_simple`, `setAndInterpolateBetweenIndexes1`) bail out on
+  missing/empty arrays, `singleImpulseFromFloatArray` rejects `length <= 0` and
+  `offset >= length` (was `>`), and `setFilterSize` rejects non-positive sizes
+  as a backstop.
+
+- Two `fullPath` allocations sized `strlen(...)` without room for the null
+  terminator (`vas_fir_read_singleImpulseFromFloatArray`, both branches, and
+  `rwa_firobject_read2`'s sofa branch), a one-byte heap overflow in principle,
+  oftentimes masked in practice by allocator rounding. Now `+ 1`, matching the
+  erlier fixed txt branch.
+
 - Engines now deregister from the shared `IRs` filter cache when they are freed.
   The file-based read path (`.txt` HRTF, `.sofa`) registers the loading engine
   in the global `vas_fir_list IRs` so later instances can share the filter, but

@@ -38,10 +38,26 @@ void vas_fir_read_singleImpulseFromFloatArray(vas_fir *x, char *name, float *lef
 {
     int ele = 0;
     int azi = 0;
-    
-    if(offset > length)
+
+    // A missing Pd array or an offset at/after the end would initialize a
+    // zero-length filter (numberOfSegments 0/0, zero-sized segment buffers) and
+    // still set the init flag - the DSP then convolves through garbage pointers.
+    if(!left || !right || length <= 0)
+    {
+#if defined(MAXMSPSDK) || defined(PUREDATA)
+        post("vas_fir: %s: no IR data, filter unchanged", name);
+#endif
         return;
-    
+    }
+
+    if(offset >= length)
+    {
+#if defined(MAXMSPSDK) || defined(PUREDATA)
+        post("vas_fir: %s: offset %d beyond IR length %d, filter unchanged", name, offset, (int)length);
+#endif
+        return;
+    }
+
     if(vas_fir_getInitFlag(x))
     {
         vas_fir_list_removeNode(&IRs, x->metaData.fullPath);
@@ -55,7 +71,7 @@ void vas_fir_read_singleImpulseFromFloatArray(vas_fir *x, char *name, float *lef
     if(existingFilter != NULL)
     {
         size_t size = strlen(existingFilter->metaData.fullPath);
-        x->metaData.fullPath = vas_mem_alloc(sizeof(char) * size);
+        x->metaData.fullPath = vas_mem_alloc(size + 1); // include the null terminator
         strcpy(x->metaData.fullPath, existingFilter->metaData.fullPath);
         vas_fir_prepareChannelsWithSharedFilter((vas_fir *)existingFilter, x->left, x->right);
         vas_fir_setInitFlag((vas_fir *)x);
@@ -66,7 +82,7 @@ void vas_fir_read_singleImpulseFromFloatArray(vas_fir *x, char *name, float *lef
     }
 
     vas_fir_setMetaData_manually1(x, length, segmentSize, VAS_IR_DIRECTIONFORMAT_SINGLE, 1, 1, VAS_IR_AUDIOFORMAT_STEREO, VAS_IR_LINEFORMAT_IR, offset, end);
-    x->metaData.fullPath = vas_mem_alloc(sizeof(char) * strlen(name));
+    x->metaData.fullPath = vas_mem_alloc(strlen(name) + 1); // include the null terminator
     strcpy(x->metaData.fullPath, name);
     vas_dynamicFirChannel_prepareFilter(x->left, left+offset, ele, azi);
     vas_dynamicFirChannel_prepareFilter(x->right, right+offset, ele, azi);

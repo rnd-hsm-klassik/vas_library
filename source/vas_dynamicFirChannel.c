@@ -771,7 +771,20 @@ void vas_dynamicFirChannel_setFilterSize(vas_dynamicFirChannel *x, int filterSiz
        // post("invalid segmentSize");
         return;
     }
-    
+
+    // Backstop for callers that slip through with a degenerate size: filterSize 0
+    // would produce numberOfSegments = 0/0 (silently 0 on arm64) and zero-sized
+    // segment arrays that the DSP still indexes into.
+    if(filterSize <= 0)
+    {
+#if defined(MAXMSPSDK) || defined(PUREDATA)
+        post("vas_fir: invalid filter size %d, filter unchanged", filterSize);
+#else
+        printf("vas_fir: invalid filter size %d, filter unchanged", filterSize);
+#endif
+        return;
+    }
+
     x->filterSize = filterSize;
     if(x->filter->segmentSize > filterSize)
     {

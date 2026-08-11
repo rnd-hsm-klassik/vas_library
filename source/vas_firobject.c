@@ -379,7 +379,7 @@ void rwa_firobject_read2(rwa_firobject *x, t_symbol *s, float segmentSize, float
             if(existingFilter != NULL)
             {
                 size_t size = strlen(existingFilter->metaData.fullPath);
-                engine->metaData.fullPath = vas_mem_alloc(sizeof(char) * size);
+                engine->metaData.fullPath = vas_mem_alloc(size + 1); // include the null terminator
                 strcpy(engine->metaData.fullPath, existingFilter->metaData.fullPath);
                 vas_fir_prepareChannelsWithSharedFilter((vas_fir *)existingFilter, engine->left, engine->right);
                 vas_fir_setInitFlag((vas_fir *)engine);

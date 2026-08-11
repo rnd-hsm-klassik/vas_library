@@ -15,13 +15,15 @@ void vas_pdmaxobject_getFloatArrayAndLength(t_symbol *arrayname, t_word **array,
 
     if (!(a = (t_garray *)pd_findbyclass(arrayname, garray_class)))
     {
-        if (*arrayname->s_name) post("vas_fir: %s: no such array");
+        if (*arrayname->s_name) post("vas_fir: %s: no such array", arrayname->s_name);
         *array = 0;
+        *length = 0;
     }
     else if (!garray_getfloatwords(a, length, array))
     {
-        post("bad template for vas_fir");
+        post("vas_fir: %s: bad template", arrayname->s_name);
         *array = 0;
+        *length = 0;
     }
     else
     {
@@ -38,7 +40,13 @@ void vas_pdmaxobject_set_mono_simple(vas_pdmaxobject *x, t_symbol *left, float s
     
     x->segmentSize = segmentSize;
     vas_pdmaxobject_getFloatArrayAndLength(left, &x->leftArray, &x->leftArrayLength);
-    
+
+    if(!x->leftArray || x->leftArrayLength <= 0)
+    {
+        post("vas_fir: set %s: missing or empty array, filter unchanged", left->s_name);
+        return;
+    }
+
     minLength = x->leftArrayLength;
 
     vas_fir_setMetaData_manually1((vas_fir *)engine, minLength, segmentSize, VAS_IR_DIRECTIONFORMAT_SINGLE, 1, 1, VAS_IR_AUDIOFORMAT_STEREO, VAS_IR_LINEFORMAT_IR, 0, 0);
@@ -67,7 +75,14 @@ void vas_pdmaxobject_set1(vas_pdmaxobject *x, t_symbol *left, t_symbol *right, f
     x->segmentSize = segmentSize;
     vas_pdmaxobject_getFloatArrayAndLength(left, &x->leftArray, &x->leftArrayLength);
     vas_pdmaxobject_getFloatArrayAndLength(right, &x->rightArray, &x->rightArrayLength);
-    
+
+    if(!x->leftArray || !x->rightArray || x->leftArrayLength <= 0 || x->rightArrayLength <= 0)
+    {
+        post("vas_fir: set %s %s: missing or empty array, filter unchanged",
+            left->s_name, right->s_name);
+        return;
+    }
+
     maxLength = x->leftArrayLength;
     if(x->rightArrayLength > maxLength)
         maxLength = x->rightArrayLength;
@@ -178,7 +193,16 @@ void vas_pdmaxobject_setAndInterpolateBetweenIndexes1(vas_pdmaxobject *x, t_symb
 
         vas_pdmaxobject_getFloatArrayAndLength(argv[i].a_w.w_symbol, &x->leftArray, &x->leftArrayLength);
         vas_pdmaxobject_getFloatArrayAndLength(argv[i+2].a_w.w_symbol, &x->rightArray, &x->rightArrayLength);
-          
+
+        if(!x->leftArray || !x->rightArray)
+        {
+            post("vas_fir: missing array, filter unchanged");
+            vas_mem_free(startIr);
+            vas_mem_free(endIr);
+            vas_mem_free(finalIr);
+            return;
+        }
+
         maxLengthLeft = fmin(x->leftArrayLength, filterLength);
         for (int i=0;i<maxLengthLeft;i++)
         {
