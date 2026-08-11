@@ -51,6 +51,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Cleaned up the filter-loading log output. The cache lookup
+  (`vas_fir_list_find1`) posted `<lookup-key> <node-path>` for every node it
+  scanned: lines like `1342-reverbL /…/fabian_dir256.txt` that read as if an
+  array had been mapped to the HRTF file, twice misdiagnosed during RWA Creator
+  debugging. The scan is now silent; instead, every remaining post identifies
+  itself and its subject: `vas_fir: read <n> samples from array <name>`,
+  `vas_fir: <key>: use cached filter (segment size …)`, `vas_fir: <key>: new
+  filter from file/arrays (…)`, `vas_fir: <key>: replacing previous filter`,
+  `vas_fir: free filter`. Dropped the redundant `IR Path:` line (the outcome
+  posts carry the resolved path), the stray `Set Segment Size` post in the
+  invalid-segment-size branch, and the bare `%.20f` threshold post No functional
+  changes.
+
 - Resolve IR files via Pd's search path:
 
   `vas_pdmaxobject_read` concatenated the canvas directory with the filename,
@@ -101,7 +114,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   terminator (`vas_fir_read_singleImpulseFromFloatArray`, both branches, and
   `rwa_firobject_read2`'s sofa branch), a one-byte heap overflow in principle,
   oftentimes masked in practice by allocator rounding. Now `+ 1`, matching the
-  erlier fixed txt branch.
+  erlier fixed txt branch. One more instance of the same pattern found later in
+  `vas_fir_read_impulseFromFile`'s sofa branch, fixed the same way.
 
 - Engines now deregister from the shared `IRs` filter cache when they are freed.
   The file-based read path (`.txt` HRTF, `.sofa`) registers the loading engine

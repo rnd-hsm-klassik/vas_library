@@ -62,7 +62,7 @@ void vas_fir_read_singleImpulseFromFloatArray(vas_fir *x, char *name, float *lef
     {
         vas_fir_list_removeNode(&IRs, x->metaData.fullPath);
 #if defined(MAXMSPSDK) || defined(PUREDATA)
-        post("remove current filter node");
+        post("vas_fir: %s: replacing previous filter", x->metaData.fullPath);
 #endif
     }
         
@@ -76,7 +76,7 @@ void vas_fir_read_singleImpulseFromFloatArray(vas_fir *x, char *name, float *lef
         vas_fir_prepareChannelsWithSharedFilter((vas_fir *)existingFilter, x->left, x->right);
         vas_fir_setInitFlag((vas_fir *)x);
 #if defined(MAXMSPSDK) || defined(PUREDATA)
-        post("Use existing filter");
+        post("vas_fir: %s: use cached filter (segment size %d, offset %d)", name, segmentSize, offset);
 #endif
         return;
     }
@@ -88,6 +88,9 @@ void vas_fir_read_singleImpulseFromFloatArray(vas_fir *x, char *name, float *lef
     vas_dynamicFirChannel_prepareFilter(x->right, right+offset, ele, azi);
     vas_fir_list_addNode(&IRs, vas_fir_listNode_new(x));
     vas_fir_setInitFlag((vas_fir *)x);
+#if defined(MAXMSPSDK) || defined(PUREDATA)
+    post("vas_fir: %s: new filter from arrays (%d samples, segment size %d, offset %d)", name, (int)length, segmentSize, offset);
+#endif
 }
 
 void vas_fir_read_impulseFromFile(vas_fir *x, char *fullpath, int segmentSize, int offset, int end)
@@ -106,7 +109,7 @@ void vas_fir_read_impulseFromFile(vas_fir *x, char *fullpath, int segmentSize, i
 #ifndef VAS_USE_MULTITHREADED_LOADING
                 vas_fir_list_removeNode(&IRs, x->metaData.fullPath);
 #if defined(MAXMSPSDK) || defined(PUREDATA)
-                post("remove current filter node");
+                post("vas_fir: %s: replacing previous filter", x->metaData.fullPath);
 #endif
 #endif
             }
@@ -118,12 +121,12 @@ void vas_fir_read_impulseFromFile(vas_fir *x, char *fullpath, int segmentSize, i
             if(existingFilter != NULL)
             {
                 size_t size = strlen(existingFilter->metaData.fullPath);
-                x->metaData.fullPath = vas_mem_alloc(sizeof(char) * size);
+                x->metaData.fullPath = vas_mem_alloc(size + 1); // include the null terminator
                 strcpy(x->metaData.fullPath, existingFilter->metaData.fullPath);
                 vas_fir_prepareChannelsWithSharedFilter((vas_fir *)existingFilter, x->left, x->right);
                 vas_fir_setInitFlag((vas_fir *)x);
 #if defined(MAXMSPSDK) || defined(PUREDATA)
-                post("Use existing filter");
+                post("vas_fir: %s: use cached filter (segment size %d)", fullpath, segmentSize);
 #endif
                 return;
             }
@@ -153,7 +156,7 @@ void vas_fir_read_impulseFromFile(vas_fir *x, char *fullpath, int segmentSize, i
 #ifndef VAS_USE_MULTITHREADED_LOADING
                 vas_fir_list_removeNode(&IRs, x->metaData.fullPath);
 #if defined(MAXMSPSDK) || defined(PUREDATA)
-                post("remove current filter node");
+                post("vas_fir: %s: replacing previous filter", x->metaData.fullPath);
 #endif
 #endif
             }
@@ -170,13 +173,13 @@ void vas_fir_read_impulseFromFile(vas_fir *x, char *fullpath, int segmentSize, i
                 vas_fir_prepareChannelsWithSharedFilter((vas_fir *)existingFilter, x->left, x->right);
                 vas_fir_setInitFlag((vas_fir *)x);
 #if defined(MAXMSPSDK) || defined(PUREDATA)
-                post("Use existing filter");
+                post("vas_fir: %s: use cached filter (segment size %d)", fullpath, segmentSize);
 #endif
                 fclose(file);
                 return;
             }
 #if defined(MAXMSPSDK) || defined(PUREDATA)
-            post("Load Filter from File with segmenSize: %d", segmentSize);
+            post("vas_fir: %s: new filter from file (segment size %d)", fullpath, segmentSize);
 #endif
             
             vas_fir_setAdditionalMetaData(x, segmentSize, offset, end);

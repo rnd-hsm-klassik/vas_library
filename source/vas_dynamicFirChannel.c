@@ -344,7 +344,7 @@ void vas_dynamicFirChannel_setSegmentThreshold(vas_dynamicFirChannel *x, float t
     if(thresh >= 0 && thresh < 1)
         x->segmentThreshold = thresh;
 #if defined(MAXMSPSDK) || defined(PUREDATA)
-    post("%.20f", x->segmentThreshold);
+    post("vas_fir: segment threshold %.6f", x->segmentThreshold);
 #endif
 }
 
@@ -353,11 +353,7 @@ void vas_dynamicFirChannel_setSegmentSize(vas_dynamicFirChannel *x, int segmentS
     if(!vas_utilities_isValidSegmentSize(segmentSize))
     {
 #if defined(MAXMSPSDK) || defined(PUREDATA)
-        post("Set Segment Size");
-#endif
-        
-#if defined(MAXMSPSDK) || defined(PUREDATA)
-        post("Invalid Segment Size: %d", segmentSize);
+        post("vas_fir: invalid segment size %d", segmentSize);
 #else
         printf("Invalid Segment Size");
 #endif
@@ -758,7 +754,7 @@ void vas_dynamicFirChannel_prepareInputSignal(vas_dynamicFirChannel *x)
     else
     {
 #if defined(MAXMSPSDK) || defined(PUREDATA)
-        post("Use shared input");
+        post("vas_fir: use shared input");
 #endif
         x->input->pointerToFFTSegments = x->sharedInput->pointerToFFTSegments;
     }
@@ -1089,9 +1085,9 @@ void vas_dynamicFirChannel_free(vas_dynamicFirChannel *x)
         
 //#ifdef VERBOSE
 #if defined(MAXMSPSDK) || defined(PUREDATA)
-        post("Free  Filter");
+        post("vas_fir: free filter");
 #else
-        printf("Free  Filter");
+        printf("vas_fir: free filter");
 #endif
 //#endif
         

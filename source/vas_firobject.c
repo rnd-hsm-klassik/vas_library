@@ -31,7 +31,7 @@ void vas_firobject_getFloatArrayAndLength(rwa_firobject *x, t_symbol *arrayname,
     }
     else
     {
-        post("Reading IRs from array %s", arrayname->s_name);
+        post("vas_fir: read %d samples from array %s", *length, arrayname->s_name);
     }
 }
 
@@ -331,7 +331,7 @@ void rwa_firobject_read2(rwa_firobject *x, t_symbol *s, float segmentSize, float
     if(sys_getdspstate())
 #endif
     {
-        post("Turn off DSP before loading new IRs");
+        post("vas_fir: turn off DSP before loading new IRs");
         return;
     }
     
@@ -344,7 +344,7 @@ void rwa_firobject_read2(rwa_firobject *x, t_symbol *s, float segmentSize, float
     
     if(engine->left->filter->referenceCounter > 1)
     {
-        post("Another instance is referencing this filter.");
+        post("vas_fir: another instance references this filter, not reloading");
         return;
     }
 
@@ -358,7 +358,6 @@ void rwa_firobject_read2(rwa_firobject *x, t_symbol *s, float segmentSize, float
     vas_maxObjectUtilities_openFile1(s, x->fullpath);
 #endif
     
-    post("IR Path: %s", x->fullpath);
     fileExtension = vas_util_getFileExtension(filename);
     
     if(!strcmp(fileExtension, "sofa"))
@@ -371,7 +370,7 @@ void rwa_firobject_read2(rwa_firobject *x, t_symbol *s, float segmentSize, float
             if(vas_fir_getInitFlag(engine))
             {
                 vas_fir_list_removeNode(&IRs, engine->metaData.fullPath);
-                post("remove current filter node");
+                post("vas_fir: %s: replacing previous filter", engine->metaData.fullPath);
             }
                 
             vas_fir *existingFilter = vas_fir_list_find1(&IRs, x->fullpath, segmentSize, offset, end);
@@ -383,7 +382,7 @@ void rwa_firobject_read2(rwa_firobject *x, t_symbol *s, float segmentSize, float
                 strcpy(engine->metaData.fullPath, existingFilter->metaData.fullPath);
                 vas_fir_prepareChannelsWithSharedFilter((vas_fir *)existingFilter, engine->left, engine->right);
                 vas_fir_setInitFlag((vas_fir *)engine);
-                post("Use existing filter");
+                post("vas_fir: %s: use cached filter", x->fullpath);
                 return;
             }
             
@@ -407,7 +406,7 @@ void rwa_firobject_read2(rwa_firobject *x, t_symbol *s, float segmentSize, float
         if(vas_fir_getInitFlag(engine))
         {
             vas_fir_list_removeNode(&IRs, engine->metaData.fullPath);
-            post("remove current filter node");
+            post("vas_fir: %s: replacing previous filter", engine->metaData.fullPath);
         }
             
         vas_fir *existingFilter = vas_fir_list_find1(&IRs, x->fullpath, segmentSize, offset, end);
@@ -419,14 +418,14 @@ void rwa_firobject_read2(rwa_firobject *x, t_symbol *s, float segmentSize, float
             strcpy(engine->metaData.fullPath, existingFilter->metaData.fullPath);
             vas_fir_prepareChannelsWithSharedFilter((vas_fir *)existingFilter, engine->left, engine->right);
             vas_fir_setInitFlag((vas_fir *)engine);
-            post("Use existing filter");
+            post("vas_fir: %s: use cached filter", x->fullpath);
             return;
         }
         
         FILE *file = vas_fir_readText_metaData1((vas_fir *)engine, x->fullpath);
         if(file)
         {
-            post("Load Filter from File with segmenSize: %d", x->segmentSize);
+            post("vas_fir: %s: new filter from file (segment size %d)", x->fullpath, x->segmentSize);
             
             ((vas_fir *)engine)->metaData.filterOffset = offset;
             ((vas_fir *)engine)->metaData.segmentSize = segmentSize;
@@ -439,7 +438,6 @@ void rwa_firobject_read2(rwa_firobject *x, t_symbol *s, float segmentSize, float
             vas_fir_readText_Ir1((vas_fir *)engine, file, offset); // move fclose out of this function..
             vas_fir_list_addNode(&IRs, vas_fir_listNode_new(engine));
             vas_fir_setInitFlag((vas_fir *)engine);
-            printf("New filter\n");
         }
         else
             pd_error(x, "Could not open %s", x->fullpath);

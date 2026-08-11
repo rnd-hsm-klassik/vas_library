@@ -27,7 +27,7 @@ void vas_pdmaxobject_getFloatArrayAndLength(t_symbol *arrayname, t_word **array,
     }
     else
     {
-        post("Reading IRs from array %s", arrayname->s_name);
+        post("vas_fir: read %d samples from array %s", *length, arrayname->s_name);
     }
 }
 
@@ -250,7 +250,7 @@ void vas_pdmaxobject_read(vas_pdmaxobject *x, t_symbol *s, float segmentSize, fl
     if(sys_getdspstate())
 #endif
     {
-        post("Turn off DSP before loading new IRs");
+        post("vas_fir: turn off DSP before loading new IRs");
         return;
     }
     const char *filename = s->s_name;
@@ -261,7 +261,7 @@ void vas_pdmaxobject_read(vas_pdmaxobject *x, t_symbol *s, float segmentSize, fl
     
     if(engine->left->filter->referenceCounter > 1)
     {
-        post("Another instance is referencing this filter.");
+        post("vas_fir: another instance references this filter, not reloading");
         return;
     }
 
@@ -292,7 +292,6 @@ void vas_pdmaxobject_read(vas_pdmaxobject *x, t_symbol *s, float segmentSize, fl
 #else
     vas_maxObjectUtilities_openFile1(s, x->fullpath);
 #endif
-    post("IR Path: %s", x->fullpath);
     
     vas_fir_read_impulseFromFile(x->convolutionEngine, x->fullpath, segmentSize, offset, end);
 }
