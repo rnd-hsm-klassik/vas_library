@@ -72,6 +72,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `vas_reverb~`, `vas_partconv~` and `vas_dynconv~` no longer free the Pd arrays
+  they read IRs from, which double-freed the buffers and corrupted the heap when
+  the patch was closed. `vas_pdmaxobject_set1()` (the `set` method's array path)
+  stores the pointer obtained from `garray_getfloatwords()` in
+  `x->leftArray`/`x->rightArray`: that is the garray's own live data buffer,
+  owned by the patch, only borrowed while the samples are copied into the
+  engine's filter. The three externals' free routines called `vas_mem_free()`
+  (plain `free()`) on those pointers, so closing the canvas freed each buffer
+  twice: once in the external's free, once in `garray_free → array_free →
+  freebytes(a_vec)`. Observed as a malloc free-list trap (`SIGTRAP` in
+  `free_medium`) in RWA Creator when stopping a simulation whose game contained
+  a `vas_reverb~` patch with array-loaded IRs (`libpd_closefile` teardown); in
+  plain Pd, deleting the object or closing the patch corrupts the heap the same
+  way. A garray resize between `set` and the free (e.g. `soundfiler` reloading)
+  makes the stored pointer stale and corrupts differently but just as surely.
+  The free routines now leave the array pointers alone; `rwa_binauralsimple~`
+  never had the bug.
+
 - All eight Pure Data externals in `examples/PureData/vas_pd_osx` now build from
   a fresh clone **and load into Pd**. An earlier revision of this changelog
   claimed the build was fixed; it was not. The two items below were real but

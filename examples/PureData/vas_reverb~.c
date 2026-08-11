@@ -34,10 +34,9 @@ static void vas_reverb_free(vas_reverb *x)
     outlet_free(x->outL);
     outlet_free(x->outR);
     
-    if(x->leftArray)
-        vas_mem_free(x->leftArray);
-    if(x->rightArray)
-        vas_mem_free(x->rightArray);
+    // x->leftArray / x->rightArray are borrowed from the garrays
+    // (garray_getfloatwords) and owned by the patch; freeing them here
+    // double-frees the buffers when the canvas is closed.
 }
 
 static void *vas_reverb_new(t_symbol *s, int argc, t_atom *argv)

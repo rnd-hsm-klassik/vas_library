@@ -32,10 +32,9 @@ static void vas_dynconv_free(vas_dynconv *x)
     
     outlet_free(x->outL);
     
-    if(x->leftArray)
-        vas_mem_free(x->leftArray);
-    if(x->rightArray)
-        vas_mem_free(x->rightArray);
+    // x->leftArray / x->rightArray are borrowed from the garrays
+    // (garray_getfloatwords) and owned by the patch; freeing them here
+    // double-frees the buffers when the canvas is closed.
 }
 
 static void *vas_dynconv_new(t_symbol *s, int argc, t_atom *argv)
