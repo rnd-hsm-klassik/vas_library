@@ -72,6 +72,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Engines now deregister from the shared `IRs` filter cache when they are freed.
+  The file-based read path (`.txt` HRTF, `.sofa`) registers the loading engine
+  in the global `vas_fir_list IRs` so later instances can share the filter, but
+  no free routine ever removed the node: after the loading object was deleted
+  (patch closed), the list kept a node pointing at the freed engine, and the
+  next lookup (`vas_fir_list_find1`, a `strcmp` on the freed engine's
+  `fullPath`) touched freed memory. Hosts could only protect themselves by
+  wiping the whole cache (RWA Creator called `vas_fir_list_clear()` on every
+  simulation stop, which also threw away the pooled patchers' HRTF entry and
+  forced a full re-parse of the filter file on the next run).
+  `vas_fir_binaural_free()` (the engine free behind every Pd external here) now
+  removes its node by pointer match; a no-op for engines that never registered
+  (array-loaded IRs, sharing instances). The filter data itself is unaffected:
+  it is reference-counted per channel and freed by the last user, exactly as
+  before.
+
+- `vas_fir_list_removeNode()` and `vas_fir_list_removeNode1()` dropped the whole
+  rest of the list when removing the first node of a multi-node list
+  (`firstElement` was set to `NULL` instead of `current->next`), leaking every
+  node behind it and forgetting the cached filters. Latent until now (the
+  Creator only ever cleared the whole list, and re-reads that hit `removeNode()`
+  always re-added their node) but fatal once every engine free removes its own
+  node.
+
 - `vas_reverb~`, `vas_partconv~` and `vas_dynconv~` no longer free the Pd arrays
   they read IRs from, which double-freed the buffers and corrupted the heap when
   the patch was closed. `vas_pdmaxobject_set1()` (the `set` method's array path)

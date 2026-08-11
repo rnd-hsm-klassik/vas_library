@@ -108,11 +108,11 @@ void vas_fir_list_removeNode1(vas_fir_list *x, vas_fir *match)
         if(current->data == match)
         {
            // post("Remove: %s", current->data->description.fullPath);
-            
+
             if(last != NULL)
                 last->next = current->next;
             else
-                x->firstElement = NULL;
+                x->firstElement = current->next;
             
             if(current->next == NULL)
                 x->lastElement = last;
@@ -139,11 +139,11 @@ void vas_fir_list_removeNode(vas_fir_list *x, const char *match)
         if(!strcmp(current->data->metaData.fullPath, match))
         {
            // post("Remove: %s", current->data->description.fullPath);
-            
+
             if(last != NULL)
                 last->next = current->next;
             else
-                x->firstElement = NULL;
+                x->firstElement = current->next;
             
             if(current->next == NULL)
                 x->lastElement = last;

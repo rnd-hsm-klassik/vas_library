@@ -63,6 +63,13 @@ vas_fir_binaural *vas_fir_binaural_new(int flags)
 
 void vas_fir_binaural_free(vas_fir_binaural *x)
 {
+    // An engine that loaded a filter from file registered itself in the shared IRs
+    // cache (vas_firobject/vas_pdmaxobject read paths) and nothing ever removed the
+    // node, leaving it pointing at freed memory once the engine was gone. Removal is
+    // by pointer match; a no-op for engines that never registered (array-loaded IRs,
+    // instances sharing another engine's filter).
+    vas_fir_list_removeNode1(&IRs, (vas_fir *)x);
+
     vas_mem_free(x->metaData.fullPath );
     vas_dynamicFirChannel_free(x->left);
     vas_dynamicFirChannel_free(x->right);
