@@ -273,6 +273,13 @@ void vas_dynamicFirChannel_shareInputWith(vas_dynamicFirChannel *x, vas_dynamicF
 void vas_dynamicFirChannel_getSharedFilterValues(vas_dynamicFirChannel *x, vas_dynamicFirChannel *sharedInputChannel);
 
 /**
+ * @brief Drops x's reference to its current filter.
+ * Frees the filter if x was the last channel using it; afterwards x->filter is NULL
+ * and x->useSharedFilter is false.
+ */
+void vas_dynamicFirChannel_releaseFilter(vas_dynamicFirChannel *x);
+
+/**
  * @brief Sets the filter size <br>
  * @param x The channel, which is supposed to use the filter from another channel. <br>
  * @param filterSize The size of the filter <br>

@@ -50,7 +50,7 @@ vas_fir *vas_fir_list_find(vas_fir_list *x, const char *match)
     vas_fir_listNode *current = x->firstElement;
     while(current)
     {
-        if(current->data->metaData.fullPath != NULL)
+        if(current->data->metaData.fullPath != NULL && match != NULL)
         {
             if(!strcmp(current->data->metaData.fullPath, match))
                 return current->data;
@@ -66,7 +66,7 @@ vas_fir *vas_fir_list_find1(vas_fir_list *x, const char *match, int segmentSize,
     vas_fir_listNode *current = x->firstElement;
     while(current)
     {
-        if(current->data->metaData.fullPath != NULL)
+        if(current->data->metaData.fullPath != NULL && match != NULL)
         {
             if(!strcmp(current->data->metaData.fullPath, match)
                && current->data->metaData.segmentSize == segmentSize
@@ -133,7 +133,7 @@ void vas_fir_list_removeNode(vas_fir_list *x, const char *match)
     
     while(current)
     {
-        if(!strcmp(current->data->metaData.fullPath, match))
+        if(match && current->data->metaData.fullPath && !strcmp(current->data->metaData.fullPath, match))
         {
            // post("Remove: %s", current->data->description.fullPath);
 

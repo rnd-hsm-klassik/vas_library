@@ -38,12 +38,11 @@ void vas_fir_removeInitFlag(vas_fir *x)
 
 void vas_fir_prepareChannelsWithSharedFilter(vas_fir *x,  vas_dynamicFirChannel *left, vas_dynamicFirChannel *right)
 {
+    // getSharedFilterValues takes the reference on x's filters.
     vas_dynamicFirChannel_getSharedFilterValues(left, x->left);
     vas_dynamicFirChannel_getSharedFilterValues(right, x->right);
     vas_dynamicFirChannel_prepareArrays(left);
     vas_dynamicFirChannel_prepareArrays(right);
-    x->left->filter->referenceCounter++;
-    x->right->filter->referenceCounter++;
 }
 
 void vas_fir_setDirectionFormat(vas_fir *x, int directionFormat)
@@ -124,6 +123,7 @@ void* vas_fir_readSofa_getMetaData(vas_fir *x, char *fullpath)
         printf("Filtersize is: %d", filterLength);
 #endif
         x->metaData.filterLength = filterLength;
+        vas_mem_free(x->metaData.fullPath);
         x->metaData.fullPath = vas_mem_alloc(sizeof(char) * size);
         strcpy(x->metaData.fullPath, fullpath);
 #if defined(MAXMSPSDK) || defined(PUREDATA)
@@ -783,6 +783,7 @@ FILE *vas_fir_readText_metaData1(vas_fir *x, char *fullpath)
     }
     else
     {
+        vas_mem_free(x->metaData.fullPath);
         x->metaData.fullPath = vas_mem_alloc(size + 1); // include 1 byte for null terminator
         strcpy(x->metaData.fullPath, fullpath);
         vas_filter_extractMetaDataFromText1(x, filePtr, &line);

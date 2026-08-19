@@ -85,6 +85,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Reloading an IR into an object that shares its filter with another instance no
+  longer crashes (`EXC_BAD_ACCESS … KERN_INVALID_ADDRESS at 0x400` inside
+  `libvDSP`, called from `vas_dynamicFirChannel_prepareFilter`). Filters are
+  shared between engines through the `IRs` cache (every `vas_reverb~` that
+  `set`s the same arrays, every `rwa_binauralsimple~` that reads the same HRTF),
+  but the sharing had no ownership discipline:
+
+  - `vas_dynamicFirChannel_init1` reset a *shared* filter in place, destroying
+    the FFT setup every other user convolves with and freeing their segments
+    under them. A borrowing channel (`useSharedFilter`) then didn't recreate the
+    setup (`setSegmentSize` skips that for shared filters), so its next
+    `prepareFilter` handed the destroyed setup (its twiddle tables at `NULL + 0x400`)
+    to `vDSP_fft_zrip`. `init1` also reset `referenceCounter` to 1 while others still
+    held the filter, so freeing the owner freed the filter out from under the sharers.
+  - `getSharedFilterValues` freed the channel's previous filter unconditionally,
+    regardless of who else referenced it.
+
+  Filter ownership is now reference-counted end to end: `filter_new` starts at 1,
+  `getSharedFilterValues` takes a reference, `releaseFilter` (new) drops one
+  and frees on zero; `init1` detaches to a fresh private filter when the current
+  one is still referenced elsewhere, and only resets in place when it is the
+  sole holder (and owns it from then on). `filter_reset` / `setSegmentSize` no
+  longer leave dangling or leaked FFT setups, `filter_reset` NULLs the segment
+  buffers it frees (a second reset double-freed them), and `prepareFilter`
+  recreates a missing FFT setup instead of crashing. Cache nodes are removed by
+  engine pointer rather than by path: a sharer's path is the owner's, so a
+  sharer reloading used to evict the owner's cache entry, and `metaData.fullPath`
+  is freed before being reassigned.
+
+  Reproduced with two `vas_reverb~` `set` to the same arrays and the second one
+  `set` again (crash within three messages on the previous build); 150-step
+  randomised `set`/delete/recreate sequences over three instances now run clean
+  under `MallocScribble`/`MallocGuardEdges`.
+
 - A `set` (array-loaded IRs) whose arrays can't be resolved no longer corrupts
   the heap, it posts an error and leaves the current filter untouched. The
   failure path was unguarded: `vas_pdmaxobject_getFloatArrayAndLength` nulled

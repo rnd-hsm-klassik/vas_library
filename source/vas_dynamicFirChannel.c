@@ -29,7 +29,7 @@ vas_dynamicFirChannel_filter *vas_dynamicFirChannel_filter_new()
     x->fftSize = x->segmentSize * 2;
     x->fftSizeLog2 = log2(x->fftSize);
     x->numberOfSegments = 0;
-    x->referenceCounter = 0;
+    x->referenceCounter = 1; // the channel that creates the filter holds the first reference
     x->eleRange = 0;
     x->aziRange = 0;
     x->aziStride = 1;
@@ -76,6 +76,7 @@ void vas_dynamicFirChannel_filter_reset(vas_dynamicFirChannel_filter *x)
 #ifdef VAS_USE_VDSP
     if(x->setupReal)
         vDSP_destroy_fftsetup(x->setupReal);
+    x->setupReal = NULL;
 #endif
         
 #ifdef VAS_USE_KISSFFT
@@ -83,29 +84,42 @@ void vas_dynamicFirChannel_filter_reset(vas_dynamicFirChannel_filter *x)
         kiss_fftr_free(x->forwardFFT);
     if(x->inverseFFT)
         kiss_fftr_free(x->inverseFFT);
+    x->forwardFFT = NULL;
+    x->inverseFFT = NULL;
 #endif
     
 #ifdef VAS_USE_PFFFT
     if(x->setupReal)
         pffft_destroy_setup(x->setupReal);
+    x->setupReal = NULL;
 #endif
     
     for(int eleCount = 0; eleCount < x->eleRange; eleCount++)
     {
         for(int aziCount = 0; aziCount < x->aziRange; aziCount++)
         {
+            // Directions that were never loaded have no segment arrays.
 #ifdef VAS_USE_VDSP
+            if(x->data[eleCount][aziCount])
+            {
             for(int i = 0; i < x->numberOfSegments; i++)
             {
                 vas_mem_free(x->data[eleCount][aziCount][i].realp);
                 vas_mem_free(x->data[eleCount][aziCount][i].imagp);
+                    x->data[eleCount][aziCount][i].realp = NULL;
+                    x->data[eleCount][aziCount][i].imagp = NULL;
+                }
             }
 #endif
             
 #if defined(VAS_USE_KISSFFT) || defined(VAS_USE_PFFFT)
+            if(x->pointerToFFTSegments[eleCount][aziCount])
+            {
             for(int i = 0; i < x->numberOfSegments; i++)
             {
                 vas_mem_free(x->pointerToFFTSegments[eleCount][aziCount][i]);
+                    x->pointerToFFTSegments[eleCount][aziCount][i] = NULL;
+                }
             }
 #endif
 #ifdef VAS_WITH_AVERAGE_SEGMENTPOWER
@@ -121,12 +135,31 @@ void vas_dynamicFirChannel_init1(vas_dynamicFirChannel *x, vas_fir_metaData *met
     if(x->init)
     {
         vas_dynamicFirChannel_input_reset(x->input, x->filter->numberOfSegments);
-        vas_dynamicFirChannel_filter_reset(x->filter);
         x->init = 0;
+    }
+
+    if(x->filter->referenceCounter > 1)
+    {
+        // Other channels still convolve with this filter (we either handed it out
+        // through the IRs cache or borrowed it from there). Resetting it in place
+        // would destroy their FFT setup and free their segments under them.
+        // A borrowing channel does not recreates the setup (setSegmentSize skips
+        // that for shared filters), so its next prepareFilter would hand a
+        // destroyed setup to vDSP_fft_zrip. Detach instead: drop our reference
+        // and start from a fresh, private filter.
+        vas_dynamicFirChannel_releaseFilter(x);
+        x->filter = vas_dynamicFirChannel_filter_new();
+    }
+    else
+    {
+        // Sole holder (either our own filter, or a formerly shared one whose other
+        // users are gone). Reset it in place - and own it from here on, so that
+        // setSegmentSize recreates the FFT setup the reset just destroyed.
+        vas_dynamicFirChannel_filter_reset(x->filter);
+        x->useSharedFilter = false;
     }
     
     x->frameCounter = 0;
-    x->filter->referenceCounter = 1;
     x->filter->segmentSize = segmentSize;
     x->filter->fftSize = segmentSize * 2;
     x->filter->fftSizeLog2 = log2(x->filter->fftSize);
@@ -366,12 +399,20 @@ void vas_dynamicFirChannel_setSegmentSize(vas_dynamicFirChannel *x, int segmentS
     x->filter->fftSizeLog2 = log2(x->filter->fftSize);
 #ifdef VAS_USE_VDSP
     if(!x->useSharedFilter)
+    {
+        if(x->filter->setupReal)
+            vDSP_destroy_fftsetup(x->filter->setupReal);
         x->filter->setupReal = vDSP_create_fftsetup ( x->filter->fftSizeLog2, FFT_RADIX2);
+    }
 #endif
     
 #ifdef VAS_USE_KISSFFT
     if(!x->useSharedFilter)
     {
+        if(x->filter->forwardFFT)
+            kiss_fftr_free(x->filter->forwardFFT);
+        if(x->filter->inverseFFT)
+            kiss_fftr_free(x->filter->inverseFFT);
         x->filter->forwardFFT = kiss_fftr_alloc(x->filter->fftSize,0,0,0);
         x->filter->inverseFFT = kiss_fftr_alloc(x->filter->fftSize,1,0,0);
     }
@@ -379,7 +420,11 @@ void vas_dynamicFirChannel_setSegmentSize(vas_dynamicFirChannel *x, int segmentS
     
 #ifdef VAS_USE_PFFFT
     if(!x->useSharedFilter)
+    {
+        if(x->filter->setupReal)
+            pffft_destroy_setup(x->filter->setupReal);
         x->filter->setupReal = pffft_new_setup(x->filter->fftSize, PFFFT_REAL);
+    }
 #endif
     
 #ifdef VERBOSE
@@ -970,6 +1015,38 @@ void vas_dynamicFirChannel_prepareFilter(vas_dynamicFirChannel *x, float *filter
     int size = x->filter->segmentSize;
     int numberOfSegmentsMinusOne = x->filter->numberOfSegments-1;
     
+    if(x->filter->numberOfSegments <= 0)
+    {
+#if defined(MAXMSPSDK) || defined(PUREDATA)
+        post("vas_fir: filter engine not initialized, IR not loaded");
+#else
+        printf("vas_fir: filter engine not initialized, IR not loaded\n");
+#endif
+        return;
+    }
+
+    // Prevent missing FFT setup, which would cause KERN_INVALID_ADDRESS at 0x400
+    // The setup is a pure function of the FFT size, so it can be (re)created here.
+    // Same for the fftSize-sized work buffer.
+#ifdef VAS_USE_VDSP
+    if(!x->filter->setupReal)
+        x->filter->setupReal = vDSP_create_fftsetup(x->filter->fftSizeLog2, FFT_RADIX2);
+#endif
+#ifdef VAS_USE_KISSFFT
+    if(!x->filter->forwardFFT)
+        x->filter->forwardFFT = kiss_fftr_alloc(x->filter->fftSize,0,0,0);
+    if(!x->filter->inverseFFT)
+        x->filter->inverseFFT = kiss_fftr_alloc(x->filter->fftSize,1,0,0);
+#endif
+#ifdef VAS_USE_PFFFT
+    if(!x->filter->setupReal)
+        x->filter->setupReal = pffft_new_setup(x->filter->fftSize, PFFFT_REAL);
+    if(!x->fftWork)
+        x->fftWork = (float *)vas_mem_alloc(sizeof(float) * x->filter->fftSize);
+#endif
+    if(!x->tmp)
+        x->tmp = (float *)vas_mem_alloc(sizeof(float) * x->filter->fftSize);
+
 #ifdef VAS_USE_VDSP
     x->scale = 1.0 / (4*x->filter->fftSize); // this is apples vDSP convention
 #endif
@@ -1076,13 +1153,19 @@ void vas_dynamicFirChannel_free(vas_dynamicFirChannel *x)
 #endif
     vas_dynamicFirChannel_output_free(&x->output);
     
-    x->filter->referenceCounter--;
+    x->init = 0; // making sure, that filter is not accessed in the audio thread anymore
+    vas_dynamicFirChannel_releaseFilter(x);
+}
     
-    if( !x->filter->referenceCounter)
+void vas_dynamicFirChannel_releaseFilter(vas_dynamicFirChannel *x)
     {
-        x->init = 0; // making sure, that filter is not accessed in the audio thread anymore
-        vas_dynamicFirChannel_filter_free(x->filter);
+    if(!x->filter)
+        return;
         
+    x->filter->referenceCounter--;
+    if(x->filter->referenceCounter <= 0)
+    {
+        vas_dynamicFirChannel_filter_free(x->filter);
 //#ifdef VERBOSE
 #if defined(MAXMSPSDK) || defined(PUREDATA)
         post("vas_fir: free filter");
@@ -1090,8 +1173,9 @@ void vas_dynamicFirChannel_free(vas_dynamicFirChannel *x)
         printf("vas_fir: free filter");
 #endif
 //#endif
-        
     }
+    x->filter = NULL;
+    x->useSharedFilter = false;
 }
 
 void vas_dynamicFirChannel_setInitFlag(vas_dynamicFirChannel *x)
@@ -1113,9 +1197,20 @@ void vas_dynamicFirChannel_shareInputWith(vas_dynamicFirChannel *x, vas_dynamicF
 
 void vas_dynamicFirChannel_getSharedFilterValues(vas_dynamicFirChannel *x, vas_dynamicFirChannel *sharedInputChannel)
 {
-    if(x->filter)
-        vas_dynamicFirChannel_filter_free(x->filter);
+    if(x->init)
+    {
+        // Our input segments were sized for the previous filter; drop them before
+        // prepareArrays allocates new ones for the shared filter.
+        vas_dynamicFirChannel_input_reset(x->input, x->filter->numberOfSegments);
+        x->init = 0;
+    }
+
+    // The previous filter may itself be shared with other channels
+    // Let the reference count decide whether it gets freed.
+    vas_dynamicFirChannel_releaseFilter(x);
+
     x->filter = sharedInputChannel->filter;
+    x->filter->referenceCounter++;
     x->useSharedFilter = true;
     x->frameCounter = 0;
     vas_dynamicFirChannel_setFilterSize(x, sharedInputChannel->filterSize);
@@ -1157,4 +1252,3 @@ vas_dynamicFirChannel *vas_dynamicFirChannel_new(int setup)
     
     return x;
 }
-

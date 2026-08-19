@@ -60,7 +60,7 @@ void vas_fir_read_singleImpulseFromFloatArray(vas_fir *x, char *name, float *lef
 
     if(vas_fir_getInitFlag(x))
     {
-        vas_fir_list_removeNode(&IRs, x->metaData.fullPath);
+        vas_fir_list_removeNode1(&IRs, x); // by engine, not by path: a sharer's path is the owner's
 #if defined(MAXMSPSDK) || defined(PUREDATA)
         post("vas_fir: %s: replacing previous filter", x->metaData.fullPath);
 #endif
@@ -71,6 +71,7 @@ void vas_fir_read_singleImpulseFromFloatArray(vas_fir *x, char *name, float *lef
     if(existingFilter != NULL)
     {
         size_t size = strlen(existingFilter->metaData.fullPath);
+        vas_mem_free(x->metaData.fullPath);
         x->metaData.fullPath = vas_mem_alloc(size + 1); // include the null terminator
         strcpy(x->metaData.fullPath, existingFilter->metaData.fullPath);
         vas_fir_prepareChannelsWithSharedFilter((vas_fir *)existingFilter, x->left, x->right);
@@ -82,6 +83,7 @@ void vas_fir_read_singleImpulseFromFloatArray(vas_fir *x, char *name, float *lef
     }
 
     vas_fir_setMetaData_manually1(x, length, segmentSize, VAS_IR_DIRECTIONFORMAT_SINGLE, 1, 1, VAS_IR_AUDIOFORMAT_STEREO, VAS_IR_LINEFORMAT_IR, offset, end);
+    vas_mem_free(x->metaData.fullPath);
     x->metaData.fullPath = vas_mem_alloc(strlen(name) + 1); // include the null terminator
     strcpy(x->metaData.fullPath, name);
     vas_dynamicFirChannel_prepareFilter(x->left, left+offset, ele, azi);
@@ -107,7 +109,7 @@ void vas_fir_read_impulseFromFile(vas_fir *x, char *fullpath, int segmentSize, i
             if(vas_fir_getInitFlag(x))
             {
 #ifndef VAS_USE_MULTITHREADED_LOADING
-                vas_fir_list_removeNode(&IRs, x->metaData.fullPath);
+                vas_fir_list_removeNode1(&IRs, x); // by engine, not by path: a sharer's path is the owner's
 #if defined(MAXMSPSDK) || defined(PUREDATA)
                 post("vas_fir: %s: replacing previous filter", x->metaData.fullPath);
 #endif
@@ -121,7 +123,8 @@ void vas_fir_read_impulseFromFile(vas_fir *x, char *fullpath, int segmentSize, i
             if(existingFilter != NULL)
             {
                 size_t size = strlen(existingFilter->metaData.fullPath);
-                x->metaData.fullPath = vas_mem_alloc(size + 1); // include the null terminator
+                vas_mem_free(x->metaData.fullPath);
+        x->metaData.fullPath = vas_mem_alloc(size + 1); // include the null terminator
                 strcpy(x->metaData.fullPath, existingFilter->metaData.fullPath);
                 vas_fir_prepareChannelsWithSharedFilter((vas_fir *)existingFilter, x->left, x->right);
                 vas_fir_setInitFlag((vas_fir *)x);
@@ -154,7 +157,7 @@ void vas_fir_read_impulseFromFile(vas_fir *x, char *fullpath, int segmentSize, i
             if(vas_fir_getInitFlag(x))
             {
 #ifndef VAS_USE_MULTITHREADED_LOADING
-                vas_fir_list_removeNode(&IRs, x->metaData.fullPath);
+                vas_fir_list_removeNode1(&IRs, x); // by engine, not by path: a sharer's path is the owner's
 #if defined(MAXMSPSDK) || defined(PUREDATA)
                 post("vas_fir: %s: replacing previous filter", x->metaData.fullPath);
 #endif
@@ -168,6 +171,7 @@ void vas_fir_read_impulseFromFile(vas_fir *x, char *fullpath, int segmentSize, i
             if(existingFilter != NULL)
             {
                 size_t size = strlen(existingFilter->metaData.fullPath);
+                vas_mem_free(x->metaData.fullPath);
                 x->metaData.fullPath = vas_mem_alloc(size + 1); // include 1 byte for null terminator
                 strcpy(x->metaData.fullPath, existingFilter->metaData.fullPath);
                 vas_fir_prepareChannelsWithSharedFilter((vas_fir *)existingFilter, x->left, x->right);

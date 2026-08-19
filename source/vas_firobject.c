@@ -369,7 +369,7 @@ void rwa_firobject_read2(rwa_firobject *x, t_symbol *s, float segmentSize, float
         {
             if(vas_fir_getInitFlag(engine))
             {
-                vas_fir_list_removeNode(&IRs, engine->metaData.fullPath);
+                vas_fir_list_removeNode1(&IRs, engine); // by engine, not by path: a sharer's path is the owner's
                 post("vas_fir: %s: replacing previous filter", engine->metaData.fullPath);
             }
                 
@@ -378,6 +378,7 @@ void rwa_firobject_read2(rwa_firobject *x, t_symbol *s, float segmentSize, float
             if(existingFilter != NULL)
             {
                 size_t size = strlen(existingFilter->metaData.fullPath);
+                vas_mem_free(engine->metaData.fullPath);
                 engine->metaData.fullPath = vas_mem_alloc(size + 1); // include the null terminator
                 strcpy(engine->metaData.fullPath, existingFilter->metaData.fullPath);
                 vas_fir_prepareChannelsWithSharedFilter((vas_fir *)existingFilter, engine->left, engine->right);
@@ -405,7 +406,7 @@ void rwa_firobject_read2(rwa_firobject *x, t_symbol *s, float segmentSize, float
     {
         if(vas_fir_getInitFlag(engine))
         {
-            vas_fir_list_removeNode(&IRs, engine->metaData.fullPath);
+            vas_fir_list_removeNode1(&IRs, engine); // by engine, not by path: a sharer's path is the owner's
             post("vas_fir: %s: replacing previous filter", engine->metaData.fullPath);
         }
             
@@ -414,6 +415,7 @@ void rwa_firobject_read2(rwa_firobject *x, t_symbol *s, float segmentSize, float
         if(existingFilter != NULL)
         {
             size_t size = strlen(existingFilter->metaData.fullPath);
+            vas_mem_free(engine->metaData.fullPath);
             engine->metaData.fullPath = vas_mem_alloc(size + 1); // include 1 byte for null terminator
             strcpy(engine->metaData.fullPath, existingFilter->metaData.fullPath);
             vas_fir_prepareChannelsWithSharedFilter((vas_fir *)existingFilter, engine->left, engine->right);
