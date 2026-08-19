@@ -12,3 +12,7 @@ UserInterfaceState.xcuserstate
 # patches, but the .pd_darwin files in it are build output (rebuild them with
 # the xcodebuild line in the README).
 *.pd_darwin
+
+# libdir builds scatter .o files through source/ and the dependency submodules.
+*.o
+
